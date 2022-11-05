@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:coin_tracker/coin_data.dart';
 import 'package:cupertino_icons/cupertino_icons.dart';
 import 'dart:io' show Platform;
+import 'package:coin_tracker/networking.dart';
+
+const baseUrl =
+    'https://rest.coinapi.io/v1/exchangerate/BTC/USD?apikey=23AADA7F-48AE-44DE-A4CF-0ED759B142EE';
 
 class PriceScreen extends StatefulWidget {
   @override
@@ -11,6 +15,8 @@ class PriceScreen extends StatefulWidget {
 
 class _PriceScreenState extends State<PriceScreen> {
   String selectedCurrency = 'USD';
+
+  var coinData = NetworkHelper(baseUrl).getData();
 
   DropdownButton<String> androidPicker() {
     List<DropdownMenuItem<String>> dropdwonItems = [];
@@ -41,17 +47,10 @@ class _PriceScreenState extends State<PriceScreen> {
       itemExtent: 32.0,
       onSelectedItemChanged: (value) {
         print(value);
+        print(coinData['rate']);
       },
       children: [for (var currency in currenciesList) Text(currency)],
     );
-  }
-
-  Widget? pickPicker() {
-    if (Platform.isAndroid) {
-      return androidPicker();
-    } else if (Platform.isIOS) {
-      return iosPicker();
-    }
   }
 
   @override
@@ -90,7 +89,7 @@ class _PriceScreenState extends State<PriceScreen> {
             alignment: Alignment.center,
             padding: EdgeInsets.only(bottom: 30.0),
             color: Colors.lightBlue,
-            child: pickPicker(),
+            child: Platform.isIOS ? iosPicker() : androidPicker(),
           ),
         ],
       ),
