@@ -3,10 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:coin_tracker/coin_data.dart';
 import 'package:cupertino_icons/cupertino_icons.dart';
 import 'dart:io' show Platform;
-import 'package:coin_tracker/networking.dart';
-
-const baseUrl =
-    'https://rest.coinapi.io/v1/exchangerate/BTC/USD?apikey=23AADA7F-48AE-44DE-A4CF-0ED759B142EE';
 
 class PriceScreen extends StatefulWidget {
   @override
@@ -14,9 +10,25 @@ class PriceScreen extends StatefulWidget {
 }
 
 class _PriceScreenState extends State<PriceScreen> {
-  String selectedCurrency = 'USD';
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    updateBCT();
+  }
 
-  var coinData = NetworkHelper(baseUrl).getData();
+  CoinData coinCurrentData = CoinData();
+
+  String selectedCurrency = 'USD';
+  String? btcRate;
+
+  void updateBCT() async {
+    CoinData coinCurrentData = CoinData();
+    var mythings = await coinCurrentData.getcoinData();
+    setState(() {
+      btcRate = mythings['rate'].toInt().toString();
+    });
+  }
 
   DropdownButton<String> androidPicker() {
     List<DropdownMenuItem<String>> dropdwonItems = [];
@@ -33,9 +45,12 @@ class _PriceScreenState extends State<PriceScreen> {
     return DropdownButton<String>(
       value: selectedCurrency,
       items: dropdwonItems,
-      onChanged: (value) {
+      onChanged: (value) async {
+        var mythings = await coinCurrentData.getcoinData();
         setState(() {
           selectedCurrency = value.toString();
+
+          btcRate = mythings['rate'].toInt().toString();
         });
       },
     );
@@ -45,9 +60,12 @@ class _PriceScreenState extends State<PriceScreen> {
     return CupertinoPicker(
       backgroundColor: Colors.lightBlue,
       itemExtent: 32.0,
-      onSelectedItemChanged: (value) {
+      onSelectedItemChanged: (value) async {
+        var mythings = await coinCurrentData.getcoinData();
+        setState(() {
+          btcRate = mythings['rate'].toInt().toString();
+        });
         print(value);
-        print(coinData['rate']);
       },
       children: [for (var currency in currenciesList) Text(currency)],
     );
@@ -74,7 +92,7 @@ class _PriceScreenState extends State<PriceScreen> {
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
                 child: Text(
-                  '1 BTC = ? USD',
+                  '1 BTC = $btcRate',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 20.0,
